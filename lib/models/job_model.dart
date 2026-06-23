@@ -1,3 +1,5 @@
+//assigned by Shasitya
+
 import 'user_model.dart';
 
 class JobModel {
