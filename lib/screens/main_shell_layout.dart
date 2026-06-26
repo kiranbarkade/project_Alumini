@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
-import '../widgets/role_switcher_fab.dart';
 
 class MainShellLayout extends StatefulWidget {
   final Widget child;
@@ -161,7 +160,6 @@ class _MainShellLayoutState extends State<MainShellLayout> {
 
     return Scaffold(
       body: widget.child,
-      floatingActionButton: const RoleSwitcherFab(),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [

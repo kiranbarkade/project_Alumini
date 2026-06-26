@@ -81,10 +81,17 @@ class PostModel {
       userId: userVal,
       content: json['content'] ?? '',
       image: json['image'] ?? '',
-      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      tags:
+          (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+          [],
       company: json['company'] ?? '',
-      likes: (json['likes'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      comments: (json['comments'] as List<dynamic>?)
+      likes:
+          (json['likes'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      comments:
+          (json['comments'] as List<dynamic>?)
               ?.map((e) => CommentModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],

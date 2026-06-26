@@ -64,8 +64,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       'skills': skillsList,
       'about': _aboutController.text.trim(),
       if (_selectedRole == 'alumni') 'company': _companyController.text.trim(),
-      if (_selectedRole == 'alumni') 'designation': _designationController.text.trim(),
-      'profileImage': 'https://api.dicebear.com/7.x/adventurer/svg?seed=${_nameController.text.trim().replaceAll(' ', '')}',
+      if (_selectedRole == 'alumni')
+        'designation': _designationController.text.trim(),
+      'profileImage':
+          'https://api.dicebear.com/7.x/adventurer/svg?seed=${_nameController.text.trim().replaceAll(' ', '')}',
     };
 
     final success = await auth.signUp(data);
@@ -91,9 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-      ),
+      appBar: AppBar(title: const Text('Create Account')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -103,7 +103,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Join CareerBridge',
+                  'Join Alumni Portal System',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -123,7 +123,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   label: 'Full Name',
                   hint: 'e.g. Yuraj Patil',
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Name is required';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Name is required';
                     return null;
                   },
                 ),
@@ -134,7 +135,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hint: 'e.g. yuraj.patil@zeal.edu.in',
                   keyboardType: TextInputType.emailAddress,
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Email is required';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Email is required';
                     return null;
                   },
                 ),
@@ -145,8 +147,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hint: 'Min 6 characters',
                   obscureText: true,
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Password is required';
-                    if (val.trim().length < 6) return 'Password must be at least 6 characters';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Password is required';
+                    if (val.trim().length < 6)
+                      return 'Password must be at least 6 characters';
                     return null;
                   },
                 ),
@@ -161,7 +165,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   items: const [
                     DropdownMenuItem(value: 'student', child: Text('Student')),
-                    DropdownMenuItem(value: 'alumni', child: Text('Alumnus (Graduate)')),
+                    DropdownMenuItem(
+                      value: 'alumni',
+                      child: Text('Alumnus (Graduate)'),
+                    ),
                   ],
                   onChanged: (val) {
                     if (val != null) {
@@ -179,7 +186,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   label: 'Engineering Branch',
                   hint: 'e.g. Computer Engineering',
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Branch is required';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Branch is required';
                     return null;
                   },
                 ),
@@ -190,8 +198,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hint: 'e.g. 2027',
                   keyboardType: TextInputType.number,
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Graduation year is required';
-                    if (int.tryParse(val) == null) return 'Please enter a valid year';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Graduation year is required';
+                    if (int.tryParse(val) == null)
+                      return 'Please enter a valid year';
                     return null;
                   },
                 ),
@@ -204,7 +214,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     label: 'Current Company',
                     hint: 'e.g. Google',
                     validator: (val) {
-                      if (_selectedRole == 'alumni' && (val == null || val.trim().isEmpty)) {
+                      if (_selectedRole == 'alumni' &&
+                          (val == null || val.trim().isEmpty)) {
                         return 'Company is required for alumni';
                       }
                       return null;
@@ -216,7 +227,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     label: 'Job Role / Designation',
                     hint: 'e.g. Software Engineer III',
                     validator: (val) {
-                      if (_selectedRole == 'alumni' && (val == null || val.trim().isEmpty)) {
+                      if (_selectedRole == 'alumni' &&
+                          (val == null || val.trim().isEmpty)) {
                         return 'Role designation is required for alumni';
                       }
                       return null;

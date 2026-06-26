@@ -34,15 +34,23 @@ class _HomeScreenState extends State<HomeScreen> {
     Provider.of<AlumniProvider>(context, listen: false).fetchAlumni();
     if (user != null) {
       if (user.role == 'student') {
-        Provider.of<MentorshipProvider>(context, listen: false)
-            .fetchSessions(studentId: user.id);
-        Provider.of<ReferralProvider>(context, listen: false)
-            .fetchReferrals(studentId: user.id);
+        Provider.of<MentorshipProvider>(
+          context,
+          listen: false,
+        ).fetchSessions(studentId: user.id);
+        Provider.of<ReferralProvider>(
+          context,
+          listen: false,
+        ).fetchReferrals(studentId: user.id);
       } else if (user.role == 'alumni') {
-        Provider.of<MentorshipProvider>(context, listen: false)
-            .fetchSessions(alumniId: user.id);
-        Provider.of<ReferralProvider>(context, listen: false)
-            .fetchReferrals(alumniId: user.id);
+        Provider.of<MentorshipProvider>(
+          context,
+          listen: false,
+        ).fetchSessions(alumniId: user.id);
+        Provider.of<ReferralProvider>(
+          context,
+          listen: false,
+        ).fetchReferrals(alumniId: user.id);
       }
     }
   }
@@ -56,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'CareerBridge',
+          'Alumni Portal System',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -195,7 +203,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     greeting,
                     style: TextStyle(
                       fontSize: 14,
-                      color: theme.colorScheme.onPrimaryContainer.withOpacity(0.7),
+                      color: theme.colorScheme.onPrimaryContainer.withOpacity(
+                        0.7,
+                      ),
                     ),
                   ),
                   Text(
@@ -258,7 +268,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (sessions.isEmpty) return const SizedBox.shrink();
 
     final nextSession = sessions.first;
-    final displayUser = user.role == 'student' ? nextSession.alumniId : nextSession.studentId;
+    final displayUser = user.role == 'student'
+        ? nextSession.alumniId
+        : nextSession.studentId;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 24),
@@ -266,7 +278,9 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: theme.colorScheme.tertiaryContainer.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.tertiaryContainer.withOpacity(0.5)),
+        border: Border.all(
+          color: theme.colorScheme.tertiaryContainer.withOpacity(0.5),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,13 +317,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       displayUser.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                     Text(
                       nextSession.topic,
                       style: TextStyle(
                         fontSize: 11,
-                        color: theme.colorScheme.onTertiaryContainer.withOpacity(0.8),
+                        color: theme.colorScheme.onTertiaryContainer
+                            .withOpacity(0.8),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -322,11 +340,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     '${nextSession.date.day}/${nextSession.date.month}/${nextSession.date.year}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                   Text(
                     nextSession.timeSlot,
-                    style: TextStyle(fontSize: 11, color: theme.colorScheme.primary),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
                 ],
               ),
@@ -369,33 +393,37 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: 3,
                   itemBuilder: (context, idx) => const Padding(
                     padding: EdgeInsets.only(right: 12),
-                    child: LoadingShimmer(width: 140, height: 160, borderRadius: 16),
+                    child: LoadingShimmer(
+                      width: 140,
+                      height: 160,
+                      borderRadius: 16,
+                    ),
                   ),
                 ),
               )
             : alumniProvider.error != null
-                ? Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    height: 50,
-                    child: Text('Failed to load: ${alumniProvider.error}'),
-                  )
-                : alumniProvider.alumni.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('No alumni found'),
-                      )
-                    : SizedBox(
-                        height: 175,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: alumniProvider.alumni.length,
-                          itemBuilder: (context, idx) {
-                            final alum = alumniProvider.alumni[idx];
-                            return _buildAlumniCard(alum, theme);
-                          },
-                        ),
-                      ),
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                height: 50,
+                child: Text('Failed to load: ${alumniProvider.error}'),
+              )
+            : alumniProvider.alumni.isEmpty
+            ? const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text('No alumni found'),
+              )
+            : SizedBox(
+                height: 175,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: alumniProvider.alumni.length,
+                  itemBuilder: (context, idx) {
+                    final alum = alumniProvider.alumni[idx];
+                    return _buildAlumniCard(alum, theme);
+                  },
+                ),
+              ),
       ],
     );
   }
@@ -412,7 +440,9 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -437,7 +467,10 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 4),
             Text(
               alum.designation,
-              style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 10,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -498,33 +531,37 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: 2,
                   itemBuilder: (context, idx) => const Padding(
                     padding: EdgeInsets.only(right: 12),
-                    child: LoadingShimmer(width: 260, height: 110, borderRadius: 16),
+                    child: LoadingShimmer(
+                      width: 260,
+                      height: 110,
+                      borderRadius: 16,
+                    ),
                   ),
                 ),
               )
             : jobProvider.error != null
-                ? Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    height: 50,
-                    child: Text('Failed to load jobs: ${jobProvider.error}'),
-                  )
-                : jobProvider.jobs.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('No job postings available'),
-                      )
-                    : SizedBox(
-                        height: 120,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: jobProvider.jobs.take(5).length,
-                          itemBuilder: (context, idx) {
-                            final job = jobProvider.jobs[idx];
-                            return _buildJobCard(job, theme);
-                          },
-                        ),
-                      ),
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                height: 50,
+                child: Text('Failed to load jobs: ${jobProvider.error}'),
+              )
+            : jobProvider.jobs.isEmpty
+            ? const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text('No job postings available'),
+              )
+            : SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: jobProvider.jobs.take(5).length,
+                  itemBuilder: (context, idx) {
+                    final job = jobProvider.jobs[idx];
+                    return _buildJobCard(job, theme);
+                  },
+                ),
+              ),
       ],
     );
   }
@@ -557,7 +594,9 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -580,13 +619,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(
                         job.title,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         '${job.company} • ${job.location}',
-                        style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -608,7 +653,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.secondaryContainer,
                     borderRadius: BorderRadius.circular(6),
@@ -634,14 +682,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildAlumniStatsGrid(dynamic user, ThemeData theme) {
     final mp = Provider.of<MentorshipProvider>(context);
     final jp = Provider.of<JobProvider>(context);
-    
-    final totalConnections = mp.sessions.where((s) => s.status == 'approved').length;
-    final pendingRequests = mp.sessions.where((s) => s.status == 'pending').length;
-    final myJobsCount = jp.jobs.where((j) => j.postedBy is Map<String, dynamic>
-        ? j.postedBy['_id'] == user.id
-        : j.postedBy is UserModel
-            ? (j.postedBy as UserModel).id == user.id
-            : j.postedBy == user.id).length;
+
+    final totalConnections = mp.sessions
+        .where((s) => s.status == 'approved')
+        .length;
+    final pendingRequests = mp.sessions
+        .where((s) => s.status == 'pending')
+        .length;
+    final myJobsCount = jp.jobs
+        .where(
+          (j) => j.postedBy is Map<String, dynamic>
+              ? j.postedBy['_id'] == user.id
+              : j.postedBy is UserModel
+              ? (j.postedBy as UserModel).id == user.id
+              : j.postedBy == user.id,
+        )
+        .length;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -653,21 +709,47 @@ class _HomeScreenState extends State<HomeScreen> {
         childAspectRatio: 1.2,
         physics: const NeverScrollableScrollPhysics(),
         children: [
-          _buildStatBox('Connections', '$totalConnections', Icons.people, Colors.blue, theme),
-          _buildStatBox('Requests', '$pendingRequests', Icons.pending, Colors.orange, theme),
-          _buildStatBox('My Jobs', '$myJobsCount', Icons.work, Colors.green, theme),
+          _buildStatBox(
+            'Connections',
+            '$totalConnections',
+            Icons.people,
+            Colors.blue,
+            theme,
+          ),
+          _buildStatBox(
+            'Requests',
+            '$pendingRequests',
+            Icons.pending,
+            Colors.orange,
+            theme,
+          ),
+          _buildStatBox(
+            'My Jobs',
+            '$myJobsCount',
+            Icons.work,
+            Colors.green,
+            theme,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatBox(String title, String val, IconData icon, Color color, ThemeData theme) {
+  Widget _buildStatBox(
+    String title,
+    String val,
+    IconData icon,
+    Color color,
+    ThemeData theme,
+  ) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -681,7 +763,11 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 2),
           Text(
             title,
-            style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 10,
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -716,7 +802,10 @@ class _HomeScreenState extends State<HomeScreen> {
         if (pending.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('No pending connection requests.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            child: Text(
+              'No pending connection requests.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           )
         else
           ListView.builder(
@@ -727,31 +816,57 @@ class _HomeScreenState extends State<HomeScreen> {
               final sess = pending[idx];
               final studentName = sess.studentId is Map<String, dynamic>
                   ? sess.studentId['name'] ?? 'Student'
-                  : (sess.studentId is dynamic && sess.studentId != null && sess.studentId.name != null)
-                      ? sess.studentId.name
-                      : 'Student';
+                  : (sess.studentId is dynamic &&
+                        sess.studentId != null &&
+                        sess.studentId.name != null)
+                  ? sess.studentId.name
+                  : 'Student';
 
               return Card(
                 elevation: 0,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                  side: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                  ),
                 ),
                 color: theme.colorScheme.surfaceContainerLow,
                 child: ListTile(
-                  title: Text(studentName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  subtitle: Text('wants to connect on: ${sess.topic}', style: const TextStyle(fontSize: 11)),
+                  title: Text(
+                    studentName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'wants to connect on: ${sess.topic}',
+                    style: const TextStyle(fontSize: 11),
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.red, size: 20),
-                        onPressed: () => mp.updateSessionStatus(sess.id, 'rejected'),
+                        icon: const Icon(
+                          Icons.close,
+                          color: Colors.red,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            mp.updateSessionStatus(sess.id, 'rejected'),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.check, color: Colors.green, size: 20),
-                        onPressed: () => mp.updateSessionStatus(sess.id, 'approved', notes: 'Approved connection!'),
+                        icon: const Icon(
+                          Icons.check,
+                          color: Colors.green,
+                          size: 20,
+                        ),
+                        onPressed: () => mp.updateSessionStatus(
+                          sess.id,
+                          'approved',
+                          notes: 'Approved connection!',
+                        ),
                       ),
                     ],
                   ),
@@ -765,11 +880,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildAlumniMyJobsSection(dynamic user, ThemeData theme) {
     final jp = Provider.of<JobProvider>(context);
-    final myJobs = jp.jobs.where((j) => j.postedBy is Map<String, dynamic>
-        ? j.postedBy['_id'] == user.id
-        : j.postedBy is UserModel
-            ? (j.postedBy as UserModel).id == user.id
-            : j.postedBy == user.id).toList();
+    final myJobs = jp.jobs
+        .where(
+          (j) => j.postedBy is Map<String, dynamic>
+              ? j.postedBy['_id'] == user.id
+              : j.postedBy is UserModel
+              ? (j.postedBy as UserModel).id == user.id
+              : j.postedBy == user.id,
+        )
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -793,7 +912,10 @@ class _HomeScreenState extends State<HomeScreen> {
         if (myJobs.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('You haven\'t posted any jobs yet.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            child: Text(
+              'You haven\'t posted any jobs yet.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           )
         else
           ListView.builder(
@@ -807,21 +929,39 @@ class _HomeScreenState extends State<HomeScreen> {
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                  side: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                  ),
                 ),
                 color: theme.colorScheme.surfaceContainerLow,
                 child: ListTile(
-                  title: Text(job.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  subtitle: Text('${job.company} • ${job.location}', style: const TextStyle(fontSize: 11)),
+                  title: Text(
+                    job.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${job.company} • ${job.location}',
+                    style: const TextStyle(fontSize: 11),
+                  ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       job.type.toString().toUpperCase(),
-                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: theme.colorScheme.onSecondaryContainer),
+                      style: TextStyle(
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
                     ),
                   ),
                 ),
@@ -837,7 +977,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final mp = Provider.of<MentorshipProvider>(context);
     final jp = Provider.of<JobProvider>(context);
 
-    final totalConnections = mp.sessions.where((s) => s.status == 'approved').length;
+    final totalConnections = mp.sessions
+        .where((s) => s.status == 'approved')
+        .length;
     final jobsAvailable = jp.jobs.length;
 
     return Padding(
@@ -850,9 +992,27 @@ class _HomeScreenState extends State<HomeScreen> {
         childAspectRatio: 1.2,
         physics: const NeverScrollableScrollPhysics(),
         children: [
-          _buildStatBox('Connections', '$totalConnections', Icons.people, Colors.blue, theme),
-          _buildStatBox('Jobs Posted', '$jobsAvailable', Icons.work, Colors.green, theme),
-          _buildStatBox('Saved Jobs', '0', Icons.bookmark_border, Colors.purple, theme),
+          _buildStatBox(
+            'Connections',
+            '$totalConnections',
+            Icons.people,
+            Colors.blue,
+            theme,
+          ),
+          _buildStatBox(
+            'Jobs Posted',
+            '$jobsAvailable',
+            Icons.work,
+            Colors.green,
+            theme,
+          ),
+          _buildStatBox(
+            'Saved Jobs',
+            '0',
+            Icons.bookmark_border,
+            Colors.purple,
+            theme,
+          ),
         ],
       ),
     );
@@ -876,7 +1036,10 @@ class _HomeScreenState extends State<HomeScreen> {
         if (approved.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('No upcoming connection sessions.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            child: Text(
+              'No upcoming connection sessions.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           )
         else
           ListView.builder(
@@ -887,22 +1050,38 @@ class _HomeScreenState extends State<HomeScreen> {
               final sess = approved[idx];
               final alumniName = sess.alumniId is Map<String, dynamic>
                   ? sess.alumniId['name'] ?? 'Alumni'
-                  : (sess.alumniId is dynamic && sess.alumniId != null && sess.alumniId.name != null)
-                      ? sess.alumniId.name
-                      : 'Alumni';
+                  : (sess.alumniId is dynamic &&
+                        sess.alumniId != null &&
+                        sess.alumniId.name != null)
+                  ? sess.alumniId.name
+                  : 'Alumni';
 
               return Card(
                 elevation: 0,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                  side: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                  ),
                 ),
                 color: theme.colorScheme.surfaceContainerLow,
                 child: ListTile(
-                  leading: const Icon(Icons.event_available, color: Colors.blue),
-                  title: Text(sess.topic, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  subtitle: Text('With $alumniName • Scheduled: ${sess.date.day}/${sess.date.month}/${sess.date.year}', style: const TextStyle(fontSize: 11)),
+                  leading: const Icon(
+                    Icons.event_available,
+                    color: Colors.blue,
+                  ),
+                  title: Text(
+                    sess.topic,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'With $alumniName • Scheduled: ${sess.date.day}/${sess.date.month}/${sess.date.year}',
+                    style: const TextStyle(fontSize: 11),
+                  ),
                 ),
               );
             },

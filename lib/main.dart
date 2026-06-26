@@ -16,11 +16,11 @@ import 'routes/app_router.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const CareerBridgeAppScope());
+  runApp(const AlumniPortalSystemAppScope());
 }
 
-class CareerBridgeAppScope extends StatelessWidget {
-  const CareerBridgeAppScope({super.key});
+class AlumniPortalSystemAppScope extends StatelessWidget {
+  const AlumniPortalSystemAppScope({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,13 +42,13 @@ class CareerBridgeAppScope extends StatelessWidget {
         // Expose GoRouter
         routerProvider,
       ],
-      child: const CareerBridgeApp(),
+      child: const AlumniPortalSystemApp(),
     );
   }
 }
 
-class CareerBridgeApp extends StatelessWidget {
-  const CareerBridgeApp({super.key});
+class AlumniPortalSystemApp extends StatelessWidget {
+  const AlumniPortalSystemApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +56,7 @@ class CareerBridgeApp extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp.router(
-      title: 'CareerBridge',
+      title: 'Alumni Portal System',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

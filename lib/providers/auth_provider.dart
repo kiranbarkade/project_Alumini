@@ -37,9 +37,11 @@ class AuthProvider extends ChangeNotifier {
           branch: 'Computer Engineering',
           graduationYear: 2027,
           skills: ['Dart', 'Flutter', 'Firebase', 'Java'],
-          profileImage: 'https://api.dicebear.com/7.x/adventurer/svg?seed=yuraj',
+          profileImage:
+              'https://api.dicebear.com/7.x/adventurer/svg?seed=yuraj',
           linkedinUrl: 'https://linkedin.com/in/yuraj-patil',
-          about: 'Pre-final year Computer Engineering student at Zeal. Learning Flutter app development.',
+          about:
+              'Pre-final year Computer Engineering student at Zeal. Learning Flutter app development.',
           resumeUrl: 'https://zeal-portal.web.app/resumes/yuraj_patil.pdf',
           createdAt: DateTime.now(),
         ),
@@ -54,7 +56,8 @@ class AuthProvider extends ChangeNotifier {
           company: 'Google',
           designation: 'Software Engineer III',
           skills: ['Flutter', 'Dart', 'Go', 'Kubernetes'],
-          profileImage: 'https://api.dicebear.com/7.x/adventurer/svg?seed=anjali',
+          profileImage:
+              'https://api.dicebear.com/7.x/adventurer/svg?seed=anjali',
           linkedinUrl: 'https://linkedin.com/in/anjali-sharma-zeal',
           about: 'Software Engineer at Google. Graduated from Zeal in 2022.',
           isVerified: true,
@@ -62,7 +65,7 @@ class AuthProvider extends ChangeNotifier {
         ),
       ];
     }
-    
+
     _isLoading = false;
     notifyListeners();
   }
@@ -130,7 +133,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       final updated = await _userRepository.getUserById(_currentUser!.id);
       _currentUser = updated;
-      
+
       // Update in availableUsers list
       final idx = _availableUsers.indexWhere((u) => u.id == updated.id);
       if (idx != -1) {
@@ -149,9 +152,12 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final updated = await _userRepository.updateProfile(_currentUser!.id, data);
+      final updated = await _userRepository.updateProfile(
+        _currentUser!.id,
+        data,
+      );
       _currentUser = updated;
-      
+
       // Update in availableUsers list
       final idx = _availableUsers.indexWhere((u) => u.id == updated.id);
       if (idx != -1) {
@@ -173,9 +179,12 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final updated = await _userRepository.uploadProfileImage(_currentUser!.id, base64Image);
+      final updated = await _userRepository.uploadProfileImage(
+        _currentUser!.id,
+        base64Image,
+      );
       _currentUser = updated;
-      
+
       // Update in availableUsers list
       final idx = _availableUsers.indexWhere((u) => u.id == updated.id);
       if (idx != -1) {

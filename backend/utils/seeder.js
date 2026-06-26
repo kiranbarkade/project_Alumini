@@ -273,7 +273,7 @@ const importData = async () => {
       },
       {
         userId: admin._id,
-        content: '📢 IMPORTANT ANNOUNCEMENT for final year CS/IT/E&TC students:\n\nCognizant GenC campus recruitment drive begins on June 20th. Registrations close this Saturday. Please update your profile fields (especially CGPA, skills, and resume) in the CareerBridge Portal so recruiters can shortlist you directly. All the best!',
+        content: '📢 IMPORTANT ANNOUNCEMENT for final year CS/IT/E&TC students:\n\nCognizant GenC campus recruitment drive begins on June 20th. Registrations close this Saturday. Please update your profile fields (especially CGPA, skills, and resume) in the Alumni Portal System so recruiters can shortlist you directly. All the best!',
         tags: ['#Job', '#Placement'],
         company: 'Cognizant',
         likes: [studentYuraj._id],

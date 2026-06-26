@@ -48,7 +48,11 @@ class UserModel {
           : int.tryParse(json['graduationYear']?.toString() ?? '0') ?? 0,
       company: json['company'] ?? '',
       designation: json['designation'] ?? '',
-      skills: (json['skills'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      skills:
+          (json['skills'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       profileImage: json['profileImage'] ?? '',
       linkedinUrl: json['linkedinUrl'] ?? '',
       about: json['about'] ?? '',

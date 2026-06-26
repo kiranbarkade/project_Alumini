@@ -1,6 +1,6 @@
-# CareerBridge - College Alumni Networking Platform
+# Alumni Portal System - College Alumni Networking Platform
 
-CareerBridge is a college alumni networking platform built with Flutter and Node.js. It allows placed alumni to guide pre-final/final-year students by reviewing resumes, scheduling mock/mentorship sessions, listing internships/jobs, and managing referrals.
+Alumni Portal System is a college alumni networking platform built with Flutter and Node.js. It allows placed alumni to guide pre-final/final-year students by reviewing resumes, scheduling mock/mentorship sessions, listing internships/jobs, and managing referrals.
 
 ---
 
@@ -108,7 +108,7 @@ backend/
 ## 🧪 Testing instructions
 
 ### Dynamic User Simulation
-CareerBridge includes a floating **Developer Swap FAB** (bottom right icon `swap_horiz`) to enable testing all roles without needing signup. Tap the FAB to switch profiles:
+Alumni Portal System includes a floating **Developer Swap FAB** (bottom right icon `swap_horiz`) to enable testing all roles without needing signup. Tap the FAB to switch profiles:
 1. **Yuraj Patil (Student)**: Request referrals on job listings, schedule mentorship sessions, update resume links, send community posts, and track application pipelines.
 2. **Anjali Sharma (Alumni - Google)**: Review incoming referral applications, approve/decline mentorship bookings, create jobs, and monitor the Alumni Dashboard.
 3. **Dr. Sandeep Poddar (Admin)**: Access platform metrics, total account stats, and referral pipeline success conversions.

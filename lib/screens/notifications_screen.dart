@@ -100,7 +100,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ? notif.sender['name']
         : notif.sender is dynamic && notif.sender != null && notif.sender.name != null
             ? notif.sender.name
-            : 'CareerBridge';
+            : 'Alumni Portal System';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),

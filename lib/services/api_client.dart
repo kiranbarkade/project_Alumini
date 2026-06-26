@@ -27,7 +27,17 @@ class ApiClient {
     // Check platform
     try {
       if (Platform.isAndroid) {
-        return 'http://10.0.2.2:5000/api';
+        // [USB PHYSICAL DEVICE DEBUGGING (Recommended)]
+        // Run: `adb reverse tcp:5000 tcp:5000` on your PC, then use:
+        return 'http://localhost:5000/api';
+
+        // [WI-FI PHYSICAL DEVICE DEBUGGING]
+        // If you are on the same Wi-Fi network as your PC, use your PC's local IP (e.g. 192.168.0.129):
+        // return 'http://192.168.0.129:5000/api';
+
+        // [EMULATOR DEBUGGING]
+        // If using Android Emulator, use 10.0.2.2 (which maps to host's localhost):
+        // return 'http://10.0.2.2:5000/api';
       }
     } catch (_) {}
     return 'http://localhost:5000/api';
