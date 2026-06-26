@@ -2,17 +2,25 @@ const User = require('../models/User');
 const Job = require('../models/Job');
 const Referral = require('../models/Referral');
 const Mentorship = require('../models/Mentorship');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // @desc    Get all users (with search and filters)
 // @route   GET /api/users
 // @access  Public
 exports.getUsers = async (req, res, next) => {
   try {
-    const { role, company, skills, search, graduationYear, page = 1, limit = 10 } = req.query;
+    const { role, company, skills, search, graduationYear, branch, page = 1, limit = 10 } = req.query;
     const query = {};
 
     if (role) query.role = role;
     if (graduationYear) query.graduationYear = Number(graduationYear);
+    if (branch) query.branch = { $regex: branch, $options: 'i' };
     if (company) query.company = { $regex: company, $options: 'i' };
     if (skills) {
       const skillsArray = skills.split(',');
@@ -180,6 +188,35 @@ exports.loginUser = async (req, res, next) => {
 
     // Remove password from output
     user.password = undefined;
+
+    res.status(200).json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Upload profile image (Base64)
+// @route   PUT /api/users/:id/profile-image
+// @access  Public
+exports.uploadProfileImage = async (req, res, next) => {
+  try {
+    const { image } = req.body;
+    if (!image) {
+      return res.status(400).json({ success: false, error: 'Please provide base64 image data' });
+    }
+
+    let user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Upload base64 to Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(image, {
+      folder: 'alumni_portal_profiles'
+    });
+
+    user.profileImage = uploadResult.secure_url;
+    await user.save();
 
     res.status(200).json({ success: true, data: user });
   } catch (err) {

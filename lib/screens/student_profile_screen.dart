@@ -1,9 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/auth_provider.dart';
 import '../providers/referral_provider.dart';
 import '../providers/mentorship_provider.dart';
-import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield.dart';
 
 class StudentProfileScreen extends StatefulWidget {
@@ -15,6 +16,55 @@ class StudentProfileScreen extends StatefulWidget {
 
 class _StudentProfileScreenState extends State<StudentProfileScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isImageUploading = false;
+
+  Future<void> _pickAndUploadImage(AuthProvider auth) async {
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 500,
+        maxHeight: 500,
+        imageQuality: 80,
+      );
+
+      if (image == null) return;
+
+      setState(() {
+        _isImageUploading = true;
+      });
+
+      final bytes = await image.readAsBytes();
+      final String base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+
+      final success = await auth.uploadProfileImage(base64Image);
+
+      setState(() {
+        _isImageUploading = false;
+      });
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile image updated successfully!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(auth.error ?? 'Failed to upload profile image')),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isImageUploading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error choosing/uploading image: ${e.toString()}')),
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -112,10 +162,55 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> with Single
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundImage: user.profileImage.isNotEmpty ? NetworkImage(user.profileImage) : null,
-                child: user.profileImage.isEmpty ? const Icon(Icons.person) : null,
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 35,
+                    backgroundImage: user.profileImage.isNotEmpty ? NetworkImage(user.profileImage) : null,
+                    child: user.profileImage.isEmpty ? const Icon(Icons.person, size: 30) : null,
+                  ),
+                  if (_isImageUploading)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: InkWell(
+                        onTap: () => _pickAndUploadImage(
+                          Provider.of<AuthProvider>(context, listen: false),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(width: 12),
               Expanded(

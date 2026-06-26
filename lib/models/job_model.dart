@@ -12,6 +12,9 @@ class JobModel {
   final dynamic postedBy; // Can be a String ID or a UserModel instance
   final List<String> skillsRequired;
   final String salary;
+  final String experienceRequired;
+  final String deadline;
+  final String applyLink;
   final String companyLogo;
   final DateTime createdAt;
 
@@ -25,6 +28,9 @@ class JobModel {
     required this.postedBy,
     this.skillsRequired = const [],
     this.salary = '',
+    this.experienceRequired = 'Fresher',
+    this.deadline = '',
+    this.applyLink = '',
     this.companyLogo = '',
     required this.createdAt,
   });
@@ -48,6 +54,9 @@ class JobModel {
               .toList() ??
           [],
       salary: json['salary'] ?? '',
+      experienceRequired: json['experienceRequired'] ?? 'Fresher',
+      deadline: json['deadline'] ?? '',
+      applyLink: json['applyLink'] ?? '',
       companyLogo: json['companyLogo'] ?? '',
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
@@ -66,6 +75,9 @@ class JobModel {
       'postedBy': postedBy is UserModel ? (postedBy as UserModel).id : postedBy,
       'skillsRequired': skillsRequired,
       'salary': salary,
+      'experienceRequired': experienceRequired,
+      'deadline': deadline,
+      'applyLink': applyLink,
       'companyLogo': companyLogo,
       'createdAt': createdAt.toIso8601String(),
     };

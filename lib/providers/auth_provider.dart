@@ -165,4 +165,30 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> uploadProfileImage(String base64Image) async {
+    if (_currentUser == null) return false;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final updated = await _userRepository.uploadProfileImage(_currentUser!.id, base64Image);
+      _currentUser = updated;
+      
+      // Update in availableUsers list
+      final idx = _availableUsers.indexWhere((u) => u.id == updated.id);
+      if (idx != -1) {
+        _availableUsers[idx] = updated;
+      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 }

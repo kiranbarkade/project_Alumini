@@ -6,7 +6,9 @@ import '../providers/job_provider.dart';
 import '../providers/alumni_provider.dart';
 import '../providers/mentorship_provider.dart';
 import '../providers/notification_provider.dart';
+import '../providers/referral_provider.dart';
 import '../widgets/loading_shimmer.dart';
+import '../models/user_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,9 +36,13 @@ class _HomeScreenState extends State<HomeScreen> {
       if (user.role == 'student') {
         Provider.of<MentorshipProvider>(context, listen: false)
             .fetchSessions(studentId: user.id);
+        Provider.of<ReferralProvider>(context, listen: false)
+            .fetchReferrals(studentId: user.id);
       } else if (user.role == 'alumni') {
         Provider.of<MentorshipProvider>(context, listen: false)
             .fetchSessions(alumniId: user.id);
+        Provider.of<ReferralProvider>(context, listen: false)
+            .fetchReferrals(alumniId: user.id);
       }
     }
   }
@@ -47,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = authProvider.currentUser;
     final theme = Theme.of(context);
 
-    // Refresh layout if user role changes
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -108,28 +113,35 @@ class _HomeScreenState extends State<HomeScreen> {
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(bottom: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. Welcome Banner
-                    _buildWelcomeBanner(user, theme),
-                    const SizedBox(height: 20),
-
-                    // 2. Search Bar
-                    _buildSearchBar(theme),
-                    const SizedBox(height: 24),
-
-                    // 3. Mentorship Sessions Preview
-                    _buildMentorshipPreview(user, theme),
-
-                    // 4. Featured Alumni
-                    _buildFeaturedAlumni(theme),
-                    const SizedBox(height: 24),
-
-                    // 5. Latest Jobs
-                    _buildLatestJobs(theme),
-                  ],
-                ),
+                child: user.role == 'alumni'
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildWelcomeBanner(user, theme),
+                          const SizedBox(height: 20),
+                          _buildAlumniStatsGrid(user, theme),
+                          const SizedBox(height: 24),
+                          _buildRecentRequestsSection(theme),
+                          const SizedBox(height: 24),
+                          _buildAlumniMyJobsSection(user, theme),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildWelcomeBanner(user, theme),
+                          const SizedBox(height: 20),
+                          _buildSearchBar(theme),
+                          const SizedBox(height: 24),
+                          _buildStudentStatsGrid(user, theme),
+                          const SizedBox(height: 24),
+                          _buildStudentUpcomingEvents(theme),
+                          const SizedBox(height: 24),
+                          _buildFeaturedAlumni(theme),
+                          const SizedBox(height: 24),
+                          _buildLatestJobs(theme),
+                        ],
+                      ),
               ),
             ),
     );
@@ -615,6 +627,287 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  // ALUMNI HOME WIDGETS
+  Widget _buildAlumniStatsGrid(dynamic user, ThemeData theme) {
+    final mp = Provider.of<MentorshipProvider>(context);
+    final jp = Provider.of<JobProvider>(context);
+    
+    final totalConnections = mp.sessions.where((s) => s.status == 'approved').length;
+    final pendingRequests = mp.sessions.where((s) => s.status == 'pending').length;
+    final myJobsCount = jp.jobs.where((j) => j.postedBy is Map<String, dynamic>
+        ? j.postedBy['_id'] == user.id
+        : j.postedBy is UserModel
+            ? (j.postedBy as UserModel).id == user.id
+            : j.postedBy == user.id).length;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: GridView.count(
+        crossAxisCount: 3,
+        shrinkWrap: true,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.2,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          _buildStatBox('Connections', '$totalConnections', Icons.people, Colors.blue, theme),
+          _buildStatBox('Requests', '$pendingRequests', Icons.pending, Colors.orange, theme),
+          _buildStatBox('My Jobs', '$myJobsCount', Icons.work, Colors.green, theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatBox(String title, String val, IconData icon, Color color, ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 4),
+          Text(
+            val,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            title,
+            style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentRequestsSection(ThemeData theme) {
+    final mp = Provider.of<MentorshipProvider>(context);
+    final pending = mp.sessions.where((s) => s.status == 'pending').toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Recent Student Requests',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                onPressed: () => context.go('/requests'),
+                child: const Text('View All'),
+              ),
+            ],
+          ),
+        ),
+        if (pending.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text('No pending connection requests.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: pending.take(2).length,
+            itemBuilder: (context, idx) {
+              final sess = pending[idx];
+              final studentName = sess.studentId is Map<String, dynamic>
+                  ? sess.studentId['name'] ?? 'Student'
+                  : (sess.studentId is dynamic && sess.studentId != null && sess.studentId.name != null)
+                      ? sess.studentId.name
+                      : 'Student';
+
+              return Card(
+                elevation: 0,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                ),
+                color: theme.colorScheme.surfaceContainerLow,
+                child: ListTile(
+                  title: Text(studentName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  subtitle: Text('wants to connect on: ${sess.topic}', style: const TextStyle(fontSize: 11)),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.red, size: 20),
+                        onPressed: () => mp.updateSessionStatus(sess.id, 'rejected'),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.check, color: Colors.green, size: 20),
+                        onPressed: () => mp.updateSessionStatus(sess.id, 'approved', notes: 'Approved connection!'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAlumniMyJobsSection(dynamic user, ThemeData theme) {
+    final jp = Provider.of<JobProvider>(context);
+    final myJobs = jp.jobs.where((j) => j.postedBy is Map<String, dynamic>
+        ? j.postedBy['_id'] == user.id
+        : j.postedBy is UserModel
+            ? (j.postedBy as UserModel).id == user.id
+            : j.postedBy == user.id).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'My Posted Jobs',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                onPressed: () => context.go('/post-job'),
+                child: const Text('Add New'),
+              ),
+            ],
+          ),
+        ),
+        if (myJobs.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text('You haven\'t posted any jobs yet.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: myJobs.take(3).length,
+            itemBuilder: (context, idx) {
+              final job = myJobs[idx];
+              return Card(
+                elevation: 0,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                ),
+                color: theme.colorScheme.surfaceContainerLow,
+                child: ListTile(
+                  title: Text(job.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  subtitle: Text('${job.company} • ${job.location}', style: const TextStyle(fontSize: 11)),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      job.type.toString().toUpperCase(),
+                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: theme.colorScheme.onSecondaryContainer),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  // STUDENT HOME WIDGETS
+  Widget _buildStudentStatsGrid(dynamic user, ThemeData theme) {
+    final mp = Provider.of<MentorshipProvider>(context);
+    final jp = Provider.of<JobProvider>(context);
+
+    final totalConnections = mp.sessions.where((s) => s.status == 'approved').length;
+    final jobsAvailable = jp.jobs.length;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: GridView.count(
+        crossAxisCount: 3,
+        shrinkWrap: true,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.2,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          _buildStatBox('Connections', '$totalConnections', Icons.people, Colors.blue, theme),
+          _buildStatBox('Jobs Posted', '$jobsAvailable', Icons.work, Colors.green, theme),
+          _buildStatBox('Saved Jobs', '0', Icons.bookmark_border, Colors.purple, theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStudentUpcomingEvents(ThemeData theme) {
+    final mp = Provider.of<MentorshipProvider>(context);
+    final approved = mp.sessions.where((s) => s.status == 'approved').toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Upcoming Connections/Events',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(height: 8),
+        if (approved.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text('No upcoming connection sessions.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: approved.take(2).length,
+            itemBuilder: (context, idx) {
+              final sess = approved[idx];
+              final alumniName = sess.alumniId is Map<String, dynamic>
+                  ? sess.alumniId['name'] ?? 'Alumni'
+                  : (sess.alumniId is dynamic && sess.alumniId != null && sess.alumniId.name != null)
+                      ? sess.alumniId.name
+                      : 'Alumni';
+
+              return Card(
+                elevation: 0,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                ),
+                color: theme.colorScheme.surfaceContainerLow,
+                child: ListTile(
+                  leading: const Icon(Icons.event_available, color: Colors.blue),
+                  title: Text(sess.topic, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  subtitle: Text('With $alumniName • Scheduled: ${sess.date.day}/${sess.date.month}/${sess.date.year}', style: const TextStyle(fontSize: 11)),
+                ),
+              );
+            },
+          ),
+      ],
     );
   }
 }

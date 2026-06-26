@@ -37,6 +37,18 @@ const jobSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  experienceRequired: {
+    type: String,
+    default: 'Fresher'
+  },
+  deadline: {
+    type: String,
+    default: ''
+  },
+  applyLink: {
+    type: String,
+    default: ''
+  },
   companyLogo: {
     type: String,
     default: ''

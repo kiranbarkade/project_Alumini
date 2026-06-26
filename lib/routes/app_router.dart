@@ -19,6 +19,8 @@ import '../screens/login_screen.dart';
 import '../screens/register_screen.dart';
 import '../screens/conversations_screen.dart';
 import '../screens/chat_screen.dart';
+import '../screens/post_job_screen.dart';
+import '../screens/alumni_requests_screen.dart';
 
 final routerProvider = Provider<GoRouter>(
   create: (context) {
@@ -82,6 +84,32 @@ final routerProvider = Provider<GoRouter>(
               builder: (context, state) => const JobBoardScreen(),
             ),
             GoRoute(
+              path: '/post-job',
+              builder: (context, state) => const PostJobScreen(),
+            ),
+            GoRoute(
+              path: '/requests',
+              builder: (context, state) => const AlumniRequestsScreen(),
+            ),
+            GoRoute(
+              path: '/conversations',
+              builder: (context, state) => const ConversationsScreen(),
+            ),
+            GoRoute(
+              path: '/profile',
+              builder: (context, state) {
+                final auth = Provider.of<AuthProvider>(context, listen: false);
+                final role = auth.currentUser?.role ?? 'student';
+
+                if (role == 'alumni') {
+                  final myId = auth.currentUser?.id ?? '';
+                  return AlumniProfileScreen(userId: myId);
+                } else {
+                  return const StudentProfileScreen();
+                }
+              },
+            ),
+            GoRoute(
               path: '/dashboard',
               builder: (context, state) {
                 // Dynamically route based on user role
@@ -118,10 +146,6 @@ final routerProvider = Provider<GoRouter>(
         GoRoute(
           path: '/notifications',
           builder: (context, state) => const NotificationsScreen(),
-        ),
-        GoRoute(
-          path: '/conversations',
-          builder: (context, state) => const ConversationsScreen(),
         ),
         GoRoute(
           path: '/chat/:id',

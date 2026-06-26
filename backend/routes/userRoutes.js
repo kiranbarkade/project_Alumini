@@ -7,7 +7,8 @@ const {
   updateUser,
   getAdminStats,
   getAlumniStats,
-  loginUser
+  loginUser,
+  uploadProfileImage
 } = require('../controllers/userController');
 
 router.route('/')
@@ -22,6 +23,9 @@ router.route('/stats/admin')
 
 router.route('/stats/alumni/:id')
   .get(getAlumniStats);
+
+router.route('/:id/profile-image')
+  .put(uploadProfileImage);
 
 router.route('/:id')
   .get(getUser)

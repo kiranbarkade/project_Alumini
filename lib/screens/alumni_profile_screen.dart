@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/alumni_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/job_provider.dart';
@@ -20,12 +22,70 @@ class AlumniProfileScreen extends StatefulWidget {
 }
 
 class _AlumniProfileScreenState extends State<AlumniProfileScreen> {
+  bool _isImageUploading = false;
+
+  Future<void> _pickAndUploadImage(AuthProvider auth) async {
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 500,
+        maxHeight: 500,
+        imageQuality: 80,
+      );
+
+      if (image == null) return;
+
+      setState(() {
+        _isImageUploading = true;
+      });
+
+      final bytes = await image.readAsBytes();
+      final String base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+
+      final success = await auth.uploadProfileImage(base64Image);
+
+      if (success && mounted) {
+        await Provider.of<AlumniProvider>(context, listen: false).fetchAlumnusById(widget.userId);
+      }
+
+      setState(() {
+        _isImageUploading = false;
+      });
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile image updated successfully!')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(auth.error ?? 'Failed to upload profile image')),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isImageUploading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error choosing/uploading image: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AlumniProvider>(context, listen: false).fetchAlumnusById(widget.userId);
       Provider.of<JobProvider>(context, listen: false).fetchJobs();
+      final currentUser = Provider.of<AuthProvider>(context, listen: false).currentUser;
+      if (currentUser != null) {
+        Provider.of<MentorshipProvider>(context, listen: false).fetchSessions(studentId: currentUser.id);
+      }
     });
   }
 
@@ -44,10 +104,31 @@ class _AlumniProfileScreenState extends State<AlumniProfileScreen> {
   Widget build(BuildContext context) {
     final alumniProvider = Provider.of<AlumniProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
+    final mp = Provider.of<MentorshipProvider>(context);
     final theme = Theme.of(context);
     
     final alumnus = alumniProvider.selectedAlumnus;
     final currentUser = authProvider.currentUser;
+
+    // Determine connection status
+    String connectionStatus = 'none'; // 'none', 'pending', 'connected'
+    if (currentUser != null && alumnus != null) {
+      final sessions = mp.sessions.where((s) {
+        final studentIdVal = s.studentId is Map<String, dynamic>
+            ? s.studentId['_id'] ?? s.studentId['id'] ?? ''
+            : s.studentId.toString();
+        final alumniIdVal = s.alumniId is Map<String, dynamic>
+            ? s.alumniId['_id'] ?? s.alumniId['id'] ?? ''
+            : s.alumniId.toString();
+        return studentIdVal == currentUser.id && alumniIdVal == alumnus.id;
+      }).toList();
+
+      if (sessions.any((s) => s.status == 'approved' || s.status == 'completed')) {
+        connectionStatus = 'connected';
+      } else if (sessions.any((s) => s.status == 'pending')) {
+        connectionStatus = 'pending';
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -72,42 +153,60 @@ class _AlumniProfileScreenState extends State<AlumniProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // 1. Header Card
-                          _buildHeaderCard(alumnus, theme),
+                          _buildHeaderCard(alumnus, theme, authProvider),
                           const SizedBox(height: 24),
 
                           // 2. Action Buttons (Only visible to student role)
                           if (currentUser != null && currentUser.role == 'student') ...[
                             Row(
                               children: [
-                                Expanded(
-                                  child: CustomButton(
-                                    text: 'Request Referral',
-                                    icon: Icons.shortcut,
-                                    onPressed: () => _showReferralModal(alumnus, currentUser.id, theme),
+                                if (connectionStatus == 'none') ...[
+                                  Expanded(
+                                    child: CustomButton(
+                                      text: 'Connect',
+                                      icon: Icons.person_add,
+                                      onPressed: () => _sendConnectionRequest(alumnus, currentUser.id),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: CustomButton(
-                                    text: 'Schedule Mentorship',
-                                    isSecondary: true,
-                                    icon: Icons.calendar_month,
-                                    onPressed: () => _showMentorshipModal(alumnus, currentUser.id, theme),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: CustomButton(
+                                      text: 'Referral',
+                                      isSecondary: true,
+                                      icon: Icons.shortcut,
+                                      onPressed: () => _showReferralModal(alumnus, currentUser.id, theme),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: CustomButton(
-                                    text: 'Message',
-                                    icon: Icons.message,
-                                    isSecondary: true,
-                                    onPressed: () {
-                                      if (alumnus != null) {
-                                        context.push('/chat/${alumnus.id}');
-                                      }
-                                    },
+                                ] else if (connectionStatus == 'pending') ...[
+                                  Expanded(
+                                    child: CustomButton(
+                                      text: 'Pending Request',
+                                      icon: Icons.hourglass_top,
+                                      onPressed: null,
+                                    ),
                                   ),
-                                ),
+                                ] else ...[
+                                  Expanded(
+                                    child: CustomButton(
+                                      text: 'Connected',
+                                      icon: Icons.check,
+                                      onPressed: null,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: CustomButton(
+                                      text: 'Message',
+                                      icon: Icons.message,
+                                      isSecondary: true,
+                                      onPressed: () {
+                                        if (alumnus != null) {
+                                          context.push('/chat/${alumnus.id}');
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                             const SizedBox(height: 24),
@@ -172,7 +271,10 @@ class _AlumniProfileScreenState extends State<AlumniProfileScreen> {
     );
   }
 
-  Widget _buildHeaderCard(dynamic alum, ThemeData theme) {
+  Widget _buildHeaderCard(dynamic alum, ThemeData theme, AuthProvider authProvider) {
+    final currentUser = authProvider.currentUser;
+    final isOwnProfile = currentUser != null && currentUser.id == alum.id;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -183,14 +285,65 @@ class _AlumniProfileScreenState extends State<AlumniProfileScreen> {
       ),
       child: Column(
         children: [
-          CircleAvatar(
-            radius: 45,
-            backgroundImage: alum.profileImage.isNotEmpty
-                ? NetworkImage(alum.profileImage)
-                : null,
-            child: alum.profileImage.isEmpty
-                ? const Icon(Icons.person, size: 45)
-                : null,
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 45,
+                backgroundImage: alum.profileImage.isNotEmpty
+                    ? NetworkImage(alum.profileImage)
+                    : null,
+                child: alum.profileImage.isEmpty
+                    ? const Icon(Icons.person, size: 45)
+                    : null,
+              ),
+              if (isOwnProfile)
+                if (_isImageUploading)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: InkWell(
+                      onTap: () => _pickAndUploadImage(authProvider),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 1,
+                              blurRadius: 3,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+            ],
           ),
           const SizedBox(height: 16),
           Row(
@@ -579,6 +732,29 @@ class _AlumniProfileScreenState extends State<AlumniProfileScreen> {
       },
     );
   }
+
+  Future<void> _sendConnectionRequest(dynamic alumnus, String studentId) async {
+    final mp = Provider.of<MentorshipProvider>(context, listen: false);
+    final success = await mp.requestSession({
+      'studentId': studentId,
+      'alumniId': alumnus.id,
+      'topic': 'Connection Request',
+      'date': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+      'timeSlot': 'Anytime',
+    });
+
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Connection request sent to ${alumnus.name}!')),
+        );
+        // Refresh sessions list
+        mp.fetchSessions(studentId: studentId);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(mp.error ?? 'Failed to send request')),
+        );
+      }
+    }
+  }
 }
-
-

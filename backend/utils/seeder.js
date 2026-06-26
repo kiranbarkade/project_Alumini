@@ -177,7 +177,10 @@ const importData = async () => {
         description: 'Cognizant is hiring Flutter developer interns to join our mobile solutions lab. You will build, test, and ship features for next-gen IoT enterprise apps.',
         postedBy: admin._id,
         skillsRequired: ['Flutter', 'Dart', 'Git', 'REST APIs'],
-        salary: '₹25,000 / month'
+        salary: '₹25,000 / month',
+        experienceRequired: 'Fresher',
+        deadline: '15 July 2026',
+        applyLink: 'https://cognizant.com/careers'
       },
       {
         title: 'Software Development Engineer - I',
@@ -187,7 +190,10 @@ const importData = async () => {
         description: 'I am happy to refer qualified Zeal juniors for the SDE-1 backend developer role at Google India. This role focuses on backend systems in Go/Java.',
         postedBy: alumniAnjali._id,
         skillsRequired: ['DSA', 'Java', 'Go', 'SQL'],
-        salary: '₹18 - ₹22 LPA'
+        salary: '₹18 - ₹22 LPA',
+        experienceRequired: 'Fresher',
+        deadline: '30 June 2026',
+        applyLink: 'https://careers.google.com'
       },
       {
         title: 'Graduate Engineer Trainee',
@@ -197,7 +203,10 @@ const importData = async () => {
         description: 'Tesla is seeking graduate mechanical engineers for powertrain testing, quality assurance, and assembly operations in Pune plant.',
         postedBy: alumniRohan._id,
         skillsRequired: ['SolidWorks', 'CFD', 'EV Design'],
-        salary: '₹12 - ₹15 LPA'
+        salary: '₹12 - ₹15 LPA',
+        experienceRequired: 'Fresher',
+        deadline: '10 August 2026',
+        applyLink: 'https://tesla.com/careers'
       },
       {
         title: 'SDE Intern',
@@ -207,7 +216,10 @@ const importData = async () => {
         description: 'Flipkart is hiring Software Development Engineer Interns. You will work with the core checkout team to optimize loading speed and transaction pipelines.',
         postedBy: alumniNeha._id,
         skillsRequired: ['Node.js', 'React', 'Data Structures', 'SQL'],
-        salary: '₹40,000 / month'
+        salary: '₹40,000 / month',
+        experienceRequired: 'Fresher',
+        deadline: '05 July 2026',
+        applyLink: 'https://flipkart.com/careers'
       },
       {
         title: 'Java Backend Developer',
@@ -217,7 +229,10 @@ const importData = async () => {
         description: 'Wipro is looking for Java backend developers to build scalable enterprise banking modules. I will refer candidates who clear the technical round.',
         postedBy: alumniAmit._id,
         skillsRequired: ['Java', 'Spring Boot', 'REST APIs', 'SQL'],
-        salary: '₹6.5 - ₹8 LPA'
+        salary: '₹6.5 - ₹8 LPA',
+        experienceRequired: '1-2 Years',
+        deadline: '20 July 2026',
+        applyLink: 'https://wipro.com/careers'
       }
     ]);
 

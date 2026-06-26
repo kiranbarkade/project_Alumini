@@ -17,31 +17,65 @@ class MainShellLayout extends StatefulWidget {
 class _MainShellLayoutState extends State<MainShellLayout> {
   int _getSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    if (location == '/') return 0;
-    if (location == '/directory') return 1;
-    if (location == '/feed') return 2;
-    if (location == '/jobs') return 3;
-    if (location == '/dashboard') return 4;
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final role = auth.currentUser?.role ?? 'student';
+
+    if (role == 'alumni') {
+      if (location == '/') return 0;
+      if (location == '/requests') return 1;
+      if (location == '/post-job') return 2;
+      if (location == '/conversations') return 3;
+      if (location == '/profile') return 4;
+    } else {
+      if (location == '/') return 0;
+      if (location == '/directory') return 1;
+      if (location == '/jobs') return 2;
+      if (location == '/conversations') return 3;
+      if (location == '/profile') return 4;
+    }
     return 0;
   }
 
   void _onItemTapped(int index, BuildContext context) {
-    switch (index) {
-      case 0:
-        context.go('/');
-        break;
-      case 1:
-        context.go('/directory');
-        break;
-      case 2:
-        context.go('/feed');
-        break;
-      case 3:
-        context.go('/jobs');
-        break;
-      case 4:
-        context.go('/dashboard');
-        break;
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final role = auth.currentUser?.role ?? 'student';
+
+    if (role == 'alumni') {
+      switch (index) {
+        case 0:
+          context.go('/');
+          break;
+        case 1:
+          context.go('/requests');
+          break;
+        case 2:
+          context.go('/post-job');
+          break;
+        case 3:
+          context.go('/conversations');
+          break;
+        case 4:
+          context.go('/profile');
+          break;
+      }
+    } else {
+      switch (index) {
+        case 0:
+          context.go('/');
+          break;
+        case 1:
+          context.go('/directory');
+          break;
+        case 2:
+          context.go('/jobs');
+          break;
+        case 3:
+          context.go('/conversations');
+          break;
+        case 4:
+          context.go('/profile');
+          break;
+      }
     }
   }
 
@@ -62,7 +96,68 @@ class _MainShellLayoutState extends State<MainShellLayout> {
     final theme = Theme.of(context);
     final selectedIndex = _getSelectedIndex(context);
     final notificationProvider = Provider.of<NotificationProvider>(context);
-    final unreadCount = notificationProvider.unreadCount;
+    final auth = Provider.of<AuthProvider>(context);
+    final user = auth.currentUser;
+    final role = user?.role ?? 'student';
+
+    List<BottomNavigationBarItem> navItems = [];
+    if (role == 'alumni') {
+      navItems = [
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.group_outlined),
+          activeIcon: Icon(Icons.group),
+          label: 'Students',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.add_circle_outline),
+          activeIcon: Icon(Icons.add_circle),
+          label: 'Post Job',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.chat_bubble_outline),
+          activeIcon: Icon(Icons.chat_bubble),
+          label: 'Messages',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'Profile',
+        ),
+      ];
+    } else {
+      navItems = [
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.school_outlined),
+          activeIcon: Icon(Icons.school),
+          label: 'Alumni',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.work_outline),
+          activeIcon: Icon(Icons.work),
+          label: 'Jobs',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.chat_bubble_outline),
+          activeIcon: Icon(Icons.chat_bubble),
+          label: 'Messages',
+        ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'Profile',
+        ),
+      ];
+    }
 
     return Scaffold(
       body: widget.child,
@@ -86,49 +181,7 @@ class _MainShellLayoutState extends State<MainShellLayout> {
           unselectedItemColor: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
-          items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.people_alt_outlined),
-              activeIcon: Icon(Icons.people_alt),
-              label: 'Alumni',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.dynamic_feed_outlined),
-              activeIcon: Icon(Icons.dynamic_feed),
-              label: 'Feed',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.work_outline),
-              activeIcon: Icon(Icons.work),
-              label: 'Jobs',
-            ),
-            BottomNavigationBarItem(
-              icon: Consumer<AuthProvider>(
-                builder: (context, auth, _) {
-                  String label = 'Profile';
-                  IconData icon = Icons.person_outline;
-                  IconData activeIcon = Icons.person;
-
-                  if (auth.currentUser != null) {
-                    if (auth.currentUser!.role == 'admin') {
-                      icon = Icons.admin_panel_settings_outlined;
-                      activeIcon = Icons.admin_panel_settings;
-                    } else if (auth.currentUser!.role == 'alumni') {
-                      icon = Icons.dashboard_customize_outlined;
-                      activeIcon = Icons.dashboard_customize;
-                    }
-                  }
-                  return Icon(selectedIndex == 4 ? activeIcon : icon);
-                },
-              ),
-              label: 'Dashboard',
-            ),
-          ],
+          items: navItems,
         ),
       ),
     );

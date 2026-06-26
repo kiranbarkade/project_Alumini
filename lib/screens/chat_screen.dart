@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -17,24 +18,34 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  Timer? _refreshTimer;
 
   UserModel? _otherUser;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadChat();
+    _loadChat();
+    // Periodic refresh every 1 second (MVP approach)
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      if (auth.currentUser != null) {
+        Provider.of<ChatProvider>(context, listen: false)
+            .fetchChatHistory(auth.currentUser!.id, widget.otherUserId);
+      }
     });
   }
 
   @override
   void dispose() {
+    // Cancel the periodic refresh timer to avoid leaks.
+    _refreshTimer?.cancel();
+    // Clear any active chat messages when leaving the screen.
+    Provider.of<ChatProvider>(context, listen: false).clearActiveMessages();
+    // Dispose controllers.
     _messageController.dispose();
     _scrollController.dispose();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ChatProvider>(context, listen: false).clearActiveMessages();
-    });
     super.dispose();
   }
 
@@ -120,53 +131,67 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final currentUser = auth.currentUser;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: _otherUser == null
-            ? const Text('Chat')
-            : Row(
-                children: [
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundImage: _otherUser!.profileImage.isNotEmpty
-                        ? NetworkImage(_otherUser!.profileImage)
-                        : null,
-                    child: _otherUser!.profileImage.isEmpty
-                        ? const Icon(Icons.person, size: 18)
-                        : null,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+int receivedCount = chat.activeMessages.where((msg) => msg.senderId == widget.otherUserId).length;
+
+return Scaffold(
+  appBar: AppBar(
+    title: _otherUser == null
+        ? const Text('Chat')
+        : Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundImage: _otherUser!.profileImage.isNotEmpty
+                    ? NetworkImage(_otherUser!.profileImage)
+                    : null,
+                child: _otherUser!.profileImage.isEmpty
+                    ? const Icon(Icons.person, size: 18)
+                    : null,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                _otherUser!.name,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (_otherUser!.isVerified) ...[
-                              const SizedBox(width: 4),
-                              const Icon(Icons.verified, color: Colors.blue, size: 14),
-                            ],
-                          ],
+                        Flexible(
+                          child: Text(
+                            _otherUser!.name,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        Text(
-                          _otherUser!.company.isNotEmpty
-                              ? '${_otherUser!.designation} at ${_otherUser!.company}'
-                              : _otherUser!.branch,
-                          style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.8)),
-                          overflow: TextOverflow.ellipsis,
+                        if (_otherUser!.isVerified) ...[
+                          const SizedBox(width: 4),
+                          const Icon(Icons.verified, color: Colors.blue, size: 14),
+                        ],
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$receivedCount',
+                            style: const TextStyle(color: Colors.white, fontSize: 10),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    Text(
+                      _otherUser!.company.isNotEmpty
+                          ? '${_otherUser!.designation} at ${_otherUser!.company}'
+                          : _otherUser!.branch,
+                      style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.8)),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
+            ],
+          ),
       ),
       body: Column(
         children: [

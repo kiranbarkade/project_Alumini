@@ -7,6 +7,7 @@ import '../widgets/loading_shimmer.dart';
 import '../widgets/empty_state_view.dart';
 import '../widgets/custom_button.dart';
 import '../models/user_model.dart';
+import '../models/job_model.dart';
 import '../widgets/custom_textfield.dart';
 
 class JobBoardScreen extends StatefulWidget {
@@ -212,89 +213,114 @@ class _JobBoardScreenState extends State<JobBoardScreen> {
         typeColor = Colors.blue;
     }
 
-    final postedByName = job.postedBy is Map<String, dynamic>
-        ? job.postedBy['name']
-        : job.postedBy is UserModel
-            ? (job.postedBy as UserModel).name
-            : 'Coordinator';
+    final experience = job is JobModel ? (job as JobModel).experienceRequired : (job.experienceRequired ?? 'Fresher');
+    final deadline = job is JobModel ? (job as JobModel).deadline : (job.deadline ?? 'N/A');
+    final applyLink = job is JobModel ? (job as JobModel).applyLink : (job.applyLink ?? '');
 
     return Card(
       elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
       ),
       color: theme.colorScheme.surfaceContainerLow,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => context.push('/jobs/${job.id}'),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: typeColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(typeIcon, color: typeColor, size: 24),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: typeColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          job.title,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${job.company} • ${job.location}',
-                          style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
+                  child: Icon(typeIcon, color: typeColor, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        job.title,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        job.company,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        job.location,
+                        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
                   ),
-                  const Icon(Icons.arrow_forward_ios, size: 14),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                job.description,
-                style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.8)),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  job.salary.isNotEmpty ? job.salary : 'Unspecified Pay',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.secondary,
+                  ),
+                ),
+                if (deadline.toString().isNotEmpty)
                   Text(
-                    job.salary.isNotEmpty ? job.salary : 'Unspecified Pay',
-                    style: TextStyle(
+                    'Deadline: $deadline',
+                    style: const TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.redAccent,
                     ),
                   ),
-                  Text(
-                    'Posted by: $postedByName',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+              ],
+            ),
+            const Divider(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => context.push('/jobs/${job.id}'),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text('View Details'),
+                  ),
+                ),
+                if (applyLink.toString().isNotEmpty) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Opening Application URL: $applyLink')),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Apply'),
                     ),
                   ),
                 ],
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );

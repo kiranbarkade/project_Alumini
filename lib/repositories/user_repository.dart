@@ -25,6 +25,27 @@ class UserRepository {
     return list.map((json) => UserModel.fromJson(json)).toList();
   }
 
+  Future<List<UserModel>> getStudents({
+    String? search,
+    String? branch,
+    String? skills,
+  }) async {
+    String query = '?role=student';
+    if (search != null && search.isNotEmpty) {
+      query += '&search=${Uri.encodeComponent(search)}';
+    }
+    if (branch != null && branch.isNotEmpty) {
+      query += '&branch=${Uri.encodeComponent(branch)}';
+    }
+    if (skills != null && skills.isNotEmpty) {
+      query += '&skills=${Uri.encodeComponent(skills)}';
+    }
+
+    final response = await _apiClient.get('/users$query');
+    final List<dynamic> list = response['data'] ?? [];
+    return list.map((json) => UserModel.fromJson(json)).toList();
+  }
+
   Future<UserModel> getUserById(String id) async {
     final response = await _apiClient.get('/users/$id');
     return UserModel.fromJson(response['data']);
@@ -42,6 +63,13 @@ class UserRepository {
 
   Future<UserModel> updateProfile(String id, Map<String, dynamic> data) async {
     final response = await _apiClient.put('/users/$id', data);
+    return UserModel.fromJson(response['data']);
+  }
+
+  Future<UserModel> uploadProfileImage(String id, String base64Image) async {
+    final response = await _apiClient.put('/users/$id/profile-image', {
+      'image': base64Image,
+    });
     return UserModel.fromJson(response['data']);
   }
 

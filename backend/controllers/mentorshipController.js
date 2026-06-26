@@ -7,26 +7,40 @@ const User = require('../models/User');
 // @access  Public
 exports.createMentorshipRequest = async (req, res, next) => {
   try {
-    const { studentId, alumniId, topic, date, timeSlot } = req.body;
+    const { studentId, alumniId, topic, date, timeSlot, status = 'pending', notes = '' } = req.body;
 
     const mentorship = await Mentorship.create({
       studentId,
       alumniId,
       topic,
       date,
-      timeSlot
+      timeSlot,
+      status,
+      notes
     });
 
     const student = await User.findById(studentId);
+    const alumni = await User.findById(alumniId);
 
-    // Notify Alumni about mentorship request
-    await Notification.create({
-      recipient: alumniId,
-      sender: studentId,
-      type: 'mentorship',
-      message: `${student.name} requested a mentorship session: "${topic}"`,
-      referenceId: mentorship._id.toString()
-    });
+    if (status === 'approved') {
+      // Notify Student that the Alumni has connected
+      await Notification.create({
+        recipient: studentId,
+        sender: alumniId,
+        type: 'mentorship',
+        message: `${alumni.name} connected with you!`,
+        referenceId: mentorship._id.toString()
+      });
+    } else {
+      // Notify Alumni about mentorship request
+      await Notification.create({
+        recipient: alumniId,
+        sender: studentId,
+        type: 'mentorship',
+        message: `${student.name} requested a mentorship session: "${topic}"`,
+        referenceId: mentorship._id.toString()
+      });
+    }
 
     res.status(201).json({ success: true, data: mentorship });
   } catch (err) {
